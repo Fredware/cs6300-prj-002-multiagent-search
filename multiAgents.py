@@ -18,6 +18,14 @@ import random, util
 
 from game import Agent
 
+
+def compute_point_distance(point_a, point_b):
+    """
+    Calculates the l2-norm between two tuples
+    """
+    return sum((x1-x2)**2 for x1, x2 in zip(point_a, point_b))**0.5
+
+
 class ReflexAgent(Agent):
     """
     A reflex agent chooses an action at each choice point by examining
@@ -27,7 +35,6 @@ class ReflexAgent(Agent):
     it in any way you see fit, so long as you don't touch our method
     headers.
     """
-
 
     def getAction(self, gameState):
         """
@@ -74,7 +81,22 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+        ghost_positions = [ghost_state.getPosition() for ghost_state in newGhostStates]
+        food_positions = [(i, j) for i, row in enumerate(newFood) for j, is_food in enumerate(row) if is_food]
+        food_distances = [compute_point_distance(newPos, food_position) for food_position in food_positions]
+        # Avoid action if it results in death
+        successor_score = successorGameState.getScore()
+        if newPos in ghost_positions:
+            successor_score = -1000
+        else:
+            # Encourage action if it results in food
+            if currentGameState.getFood()[newPos[0]][newPos[1]]:
+                successor_score += 100
+            # Discourage action if it results in going away from food
+            if food_distances:
+                successor_score -= min(food_distances)
+        return successor_score
+
 
 def scoreEvaluationFunction(currentGameState):
     """
