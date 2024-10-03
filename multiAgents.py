@@ -157,7 +157,42 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        print(gameState.getNumAgents())
+        action, reward = self.get_minimax_solution(gameState, self.depth, 0)
+        print(action, reward)
+        return action
+
+    def get_minimax_solution(self, gameState, depth, agent_id):
+        if depth == 0 or self.is_terminal(gameState):
+            return None, self.evaluationFunction(gameState) # (action, reward) tuple
+
+        if agent_id == 0:
+            max_val = float("-inf")
+            max_action = None
+            for action in gameState.getLegalActions(agent_id):
+                successor_state = gameState.generateSuccessor(agent_id, action)
+                _, val = self.get_minimax_solution(successor_state, depth, (agent_id+1)%gameState.getNumAgents())
+                if val > max_val:
+                    max_val = val
+                    max_action = action
+            return max_action, max_val
+
+        else:
+            min_val = float("inf")
+            min_action = None
+            for action in gameState.getLegalActions(agent_id):
+                successor_state = gameState.generateSuccessor(agent_id, action)
+                if agent_id == gameState.getNumAgents() - 1:
+                    _, val = self.get_minimax_solution(successor_state, depth-1, (agent_id+1)%gameState.getNumAgents())
+                else:
+                    _, val = self.get_minimax_solution(successor_state, depth, (agent_id+1)%gameState.getNumAgents())
+                if val < min_val:
+                    min_val = val
+                    min_action = action
+            return min_action, min_val
+    def is_terminal(self, gameState):
+        return gameState.isWin() or gameState.isLose()
+
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
