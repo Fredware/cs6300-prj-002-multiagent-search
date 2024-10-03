@@ -23,7 +23,7 @@ def compute_point_distance(point_a, point_b):
     """
     Calculates the l2-norm between two tuples
     """
-    return sum((x1-x2)**2 for x1, x2 in zip(point_a, point_b))**0.5
+    return sum((x1 - x2) ** 2 for x1, x2 in zip(point_a, point_b)) ** 0.5
 
 
 class ReflexAgent(Agent):
@@ -52,7 +52,7 @@ class ReflexAgent(Agent):
         scores = [self.evaluationFunction(gameState, action) for action in legalMoves]
         bestScore = max(scores)
         bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
-        chosenIndex = random.choice(bestIndices) # Pick randomly among the best
+        chosenIndex = random.choice(bestIndices)  # Pick randomly among the best
 
         "Add more of your code here if you want to"
 
@@ -108,6 +108,7 @@ def scoreEvaluationFunction(currentGameState):
     """
     return currentGameState.getScore()
 
+
 class MultiAgentSearchAgent(Agent):
     """
     This class provides some common elements to all of your
@@ -123,10 +124,11 @@ class MultiAgentSearchAgent(Agent):
     is another abstract class.
     """
 
-    def __init__(self, evalFn = 'scoreEvaluationFunction', depth = '2'):
-        self.index = 0 # Pacman is always agent index 0
+    def __init__(self, evalFn='scoreEvaluationFunction', depth='2'):
+        self.index = 0  # Pacman is always agent index 0
         self.evaluationFunction = util.lookup(evalFn, globals())
         self.depth = int(depth)
+
 
 class MinimaxAgent(MultiAgentSearchAgent):
     """
@@ -164,14 +166,14 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
     def get_minimax_solution(self, gameState, depth, agent_id):
         if depth == 0 or self.is_terminal(gameState):
-            return None, self.evaluationFunction(gameState) # (action, reward) tuple
+            return None, self.evaluationFunction(gameState)  # (action, reward) tuple
 
         if agent_id == 0:
             max_val = float("-inf")
             max_action = None
             for action in gameState.getLegalActions(agent_id):
                 successor_state = gameState.generateSuccessor(agent_id, action)
-                _, val = self.get_minimax_solution(successor_state, depth, (agent_id+1)%gameState.getNumAgents())
+                _, val = self.get_minimax_solution(successor_state, depth, (agent_id + 1) % gameState.getNumAgents())
                 if val > max_val:
                     max_val = val
                     max_action = action
@@ -183,13 +185,16 @@ class MinimaxAgent(MultiAgentSearchAgent):
             for action in gameState.getLegalActions(agent_id):
                 successor_state = gameState.generateSuccessor(agent_id, action)
                 if agent_id == gameState.getNumAgents() - 1:
-                    _, val = self.get_minimax_solution(successor_state, depth-1, (agent_id+1)%gameState.getNumAgents())
+                    _, val = self.get_minimax_solution(successor_state, depth - 1,
+                                                       (agent_id + 1) % gameState.getNumAgents())
                 else:
-                    _, val = self.get_minimax_solution(successor_state, depth, (agent_id+1)%gameState.getNumAgents())
+                    _, val = self.get_minimax_solution(successor_state, depth,
+                                                       (agent_id + 1) % gameState.getNumAgents())
                 if val < min_val:
                     min_val = val
                     min_action = action
             return min_action, min_val
+
     def is_terminal(self, gameState):
         return gameState.isWin() or gameState.isLose()
 
@@ -204,7 +209,37 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+    def get_ab_solution(self, gameState, depth, agent_id):
+        if depth == 0 or self.is_terminal(gameState):
+            return None, self.evaluationFunction(gameState)  # (action, reward) tuple
+
+        if agent_id == 0:
+            max_val = float("-inf")
+            max_action = None
+            for action in gameState.getLegalActions(agent_id):
+                successor_state = gameState.generateSuccessor(agent_id, action)
+                _, val = self.get_minimax_solution(successor_state, depth, (agent_id + 1) % gameState.getNumAgents())
+                if val > max_val:
+                    max_val = val
+                    max_action = action
+            return max_action, max_val
+
+        else:
+            min_val = float("inf")
+            min_action = None
+            for action in gameState.getLegalActions(agent_id):
+                successor_state = gameState.generateSuccessor(agent_id, action)
+                if agent_id == gameState.getNumAgents() - 1:
+                    _, val = self.get_minimax_solution(successor_state, depth - 1,
+                                                       (agent_id + 1) % gameState.getNumAgents())
+                else:
+                    _, val = self.get_minimax_solution(successor_state, depth,
+                                                       (agent_id + 1) % gameState.getNumAgents())
+                if val < min_val:
+                    min_val = val
+                    min_action = action
+            return min_action, min_val
+
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -221,6 +256,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         "*** YOUR CODE HERE ***"
         util.raiseNotDefined()
 
+
 def betterEvaluationFunction(currentGameState):
     """
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
@@ -230,6 +266,7 @@ def betterEvaluationFunction(currentGameState):
     """
     "*** YOUR CODE HERE ***"
     util.raiseNotDefined()
+
 
 # Abbreviation
 better = betterEvaluationFunction
