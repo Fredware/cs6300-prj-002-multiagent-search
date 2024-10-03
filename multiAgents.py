@@ -209,7 +209,11 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-    def get_ab_solution(self, gameState, depth, agent_id):
+        action, reward = self.get_ab_solution(gameState, self.depth, 0, float("-inf"), float("inf"))
+        print(action, reward)
+        return action
+
+    def get_ab_solution(self, gameState, depth, agent_id, alpha, beta):
         if depth == 0 or self.is_terminal(gameState):
             return None, self.evaluationFunction(gameState)  # (action, reward) tuple
 
@@ -218,10 +222,13 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             max_action = None
             for action in gameState.getLegalActions(agent_id):
                 successor_state = gameState.generateSuccessor(agent_id, action)
-                _, val = self.get_minimax_solution(successor_state, depth, (agent_id + 1) % gameState.getNumAgents())
+                _, val = self.get_ab_solution(successor_state, depth, (agent_id + 1) % gameState.getNumAgents(), alpha, beta)
                 if val > max_val:
                     max_val = val
                     max_action = action
+                alpha = max(alpha, val)
+                if alpha > beta:
+                    break
             return max_action, max_val
 
         else:
@@ -230,15 +237,21 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             for action in gameState.getLegalActions(agent_id):
                 successor_state = gameState.generateSuccessor(agent_id, action)
                 if agent_id == gameState.getNumAgents() - 1:
-                    _, val = self.get_minimax_solution(successor_state, depth - 1,
-                                                       (agent_id + 1) % gameState.getNumAgents())
+                    _, val = self.get_ab_solution(successor_state, depth - 1,
+                                                       (agent_id + 1) % gameState.getNumAgents(), alpha, beta)
                 else:
-                    _, val = self.get_minimax_solution(successor_state, depth,
-                                                       (agent_id + 1) % gameState.getNumAgents())
+                    _, val = self.get_ab_solution(successor_state, depth,
+                                                       (agent_id + 1) % gameState.getNumAgents(), alpha, beta)
                 if val < min_val:
                     min_val = val
                     min_action = action
+                beta = min(beta, val)
+                if alpha > beta:
+                    break
             return min_action, min_val
+
+    def is_terminal(self, gameState):
+        return gameState.isWin() or gameState.isLose()
 
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
