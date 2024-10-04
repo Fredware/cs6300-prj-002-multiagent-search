@@ -267,8 +267,11 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-    def get_ab_solution(self, gameState, depth, agent_id, alpha, beta):
+        action, reward = self.get_expectimax_solution(gameState, self.depth, 0)
+        print(action, reward)
+        return action
+
+    def get_expectimax_solution(self, gameState, depth, agent_id):
         if depth == 0 or self.is_terminal(gameState):
             return None, self.evaluationFunction(gameState)  # (action, reward) tuple
 
@@ -277,33 +280,26 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             max_action = None
             for action in gameState.getLegalActions(agent_id):
                 successor_state = gameState.generateSuccessor(agent_id, action)
-                _, val = self.get_ab_solution(successor_state, depth, (agent_id + 1) % gameState.getNumAgents(), alpha, beta)
+                _, val = self.get_expectimax_solution(successor_state, depth, (agent_id + 1) % gameState.getNumAgents())
                 if val > max_val:
                     max_val = val
                     max_action = action
-                alpha = max(alpha, val)
-                if alpha > beta:
-                    break
             return max_action, max_val
 
         else:
-            min_val = float("inf")
+            mean_val = []
             min_action = None
             for action in gameState.getLegalActions(agent_id):
                 successor_state = gameState.generateSuccessor(agent_id, action)
                 if agent_id == gameState.getNumAgents() - 1:
-                    _, val = self.get_ab_solution(successor_state, depth - 1,
-                                                       (agent_id + 1) % gameState.getNumAgents(), alpha, beta)
+                    _, val = self.get_expectimax_solution(successor_state, depth - 1,
+                                                       (agent_id + 1) % gameState.getNumAgents())
                 else:
-                    _, val = self.get_ab_solution(successor_state, depth,
-                                                       (agent_id + 1) % gameState.getNumAgents(), alpha, beta)
-                if val < min_val:
-                    min_val = val
-                    min_action = action
-                beta = min(beta, val)
-                if alpha > beta:
-                    break
-            return min_action, min_val
+                    _, val = self.get_expectimax_solution(successor_state, depth,
+                                                       (agent_id + 1) % gameState.getNumAgents())
+                mean_val.append(val)
+            mean_val = sum(mean_val) / len(mean_val)
+            return min_action, mean_val
 
     def is_terminal(self, gameState):
         return gameState.isWin() or gameState.isLose()
