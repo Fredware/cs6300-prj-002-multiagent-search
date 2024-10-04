@@ -327,6 +327,13 @@ def betterEvaluationFunction(currentGameState):
             remaining_agents = successor_state.getNumAgents()  # Don't count pacman
             print(remaining_food, remaining_pellets, remaining_agents)
             future_expected_score += (100.0/(remaining_food+1) + 50.0/(remaining_pellets+1) + 10.0/remaining_agents)
+
+            pacman_position = successor_state.getPacmanPosition()
+            food_grid = successor_state.getFood()
+            food_positions = [(i, j) for i, row in enumerate(food_grid) for j, is_food in enumerate(row) if is_food]
+            food_distances = [compute_point_distance(pacman_position, food_position) for food_position in food_positions]
+            if food_distances:
+                future_expected_score += 5.0/min(food_distances)
         future_expected_score = future_expected_score/len(legal_actions)
     return current_score + future_expected_score
 
