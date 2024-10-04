@@ -312,8 +312,23 @@ def betterEvaluationFunction(currentGameState):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-
+    current_score = currentGameState.getScore()
+    future_expected_score = 0
+    legal_actions = currentGameState.getLegalPacmanActions()
+    if legal_actions:
+        for action in legal_actions:
+            successor_state = currentGameState.generatePacmanSuccessor(action)
+            if successor_state.isLose():
+                continue
+            if successor_state.isWin():
+                future_expected_score += 1000
+            remaining_food = successor_state.getNumFood()
+            remaining_pellets = len(successor_state.getCapsules())
+            remaining_agents = successor_state.getNumAgents()  # Don't count pacman
+            print(remaining_food, remaining_pellets, remaining_agents)
+            future_expected_score += (100.0/(remaining_food+1) + 50.0/(remaining_pellets+1) + 10.0/remaining_agents)
+        future_expected_score = future_expected_score/len(legal_actions)
+    return current_score + future_expected_score
 
 # Abbreviation
 better = betterEvaluationFunction
