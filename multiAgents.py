@@ -23,7 +23,7 @@ def compute_point_distance(point_a, point_b):
     """
     Calculates the l2-norm between two tuples
     """
-    return sum((x1-x2)**2 for x1, x2 in zip(point_a, point_b))**0.5
+    return sum((x1 - x2) ** 2 for x1, x2 in zip(point_a, point_b)) ** 0.5
 
 
 class ReflexAgent(Agent):
@@ -52,7 +52,7 @@ class ReflexAgent(Agent):
         scores = [self.evaluationFunction(gameState, action) for action in legalMoves]
         bestScore = max(scores)
         bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
-        chosenIndex = random.choice(bestIndices) # Pick randomly among the best
+        chosenIndex = random.choice(bestIndices)  # Pick randomly among the best
 
         "Add more of your code here if you want to"
 
@@ -81,20 +81,23 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        ghost_positions = [ghost_state.getPosition() for ghost_state in newGhostStates]
         food_positions = [(i, j) for i, row in enumerate(newFood) for j, is_food in enumerate(row) if is_food]
         food_distances = [compute_point_distance(newPos, food_position) for food_position in food_positions]
+        ghost_positions = [ghost_state.getPosition() for ghost_state in newGhostStates]
+        ghost_distances = [compute_point_distance(newPos, ghost_position) for ghost_position in ghost_positions]
         # Avoid action if it results in death
         successor_score = successorGameState.getScore()
-        if newPos in ghost_positions:
-            successor_score = -1000
-        else:
-            # Encourage action if it results in food
-            if currentGameState.getFood()[newPos[0]][newPos[1]]:
-                successor_score += 100
-            # Discourage action if it results in going away from food
-            if food_distances:
-                successor_score -= min(food_distances)
+        if successorGameState.isLose():
+            return 0
+        if successorGameState.isWin():
+            successor_score += 1000
+        # Encourage action if it results in food
+        successor_score += 100.0 / (successorGameState.getNumFood() + 1)
+        successor_score += 50.0 / (len(currentGameState.getCapsules())+1)
+        if food_distances:
+            successor_score += 10.0 / min(food_distances)
+        if ghost_distances:
+            successor_score += min(ghost_distances) / 10.0
         return successor_score
 
 
@@ -107,6 +110,7 @@ def scoreEvaluationFunction(currentGameState):
     (not reflex agents).
     """
     return currentGameState.getScore()
+
 
 class MultiAgentSearchAgent(Agent):
     """
@@ -123,10 +127,11 @@ class MultiAgentSearchAgent(Agent):
     is another abstract class.
     """
 
-    def __init__(self, evalFn = 'scoreEvaluationFunction', depth = '2'):
-        self.index = 0 # Pacman is always agent index 0
+    def __init__(self, evalFn='scoreEvaluationFunction', depth='2'):
+        self.index = 0  # Pacman is always agent index 0
         self.evaluationFunction = util.lookup(evalFn, globals())
         self.depth = int(depth)
+
 
 class MinimaxAgent(MultiAgentSearchAgent):
     """
@@ -159,6 +164,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         "*** YOUR CODE HERE ***"
         util.raiseNotDefined()
 
+
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
     Your minimax agent with alpha-beta pruning (question 3)
@@ -170,6 +176,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
         util.raiseNotDefined()
+
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -186,6 +193,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         "*** YOUR CODE HERE ***"
         util.raiseNotDefined()
 
+
 def betterEvaluationFunction(currentGameState):
     """
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
@@ -195,6 +203,7 @@ def betterEvaluationFunction(currentGameState):
     """
     "*** YOUR CODE HERE ***"
     util.raiseNotDefined()
+
 
 # Abbreviation
 better = betterEvaluationFunction
