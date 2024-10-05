@@ -81,20 +81,23 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        ghost_positions = [ghost_state.getPosition() for ghost_state in newGhostStates]
         food_positions = [(i, j) for i, row in enumerate(newFood) for j, is_food in enumerate(row) if is_food]
         food_distances = [compute_point_distance(newPos, food_position) for food_position in food_positions]
+        ghost_positions = [ghost_state.getPosition() for ghost_state in newGhostStates]
+        ghost_distances = [compute_point_distance(newPos, ghost_position) for ghost_position in ghost_positions]
         # Avoid action if it results in death
         successor_score = successorGameState.getScore()
-        if newPos in ghost_positions:
-            successor_score = -1000
-        else:
-            # Encourage action if it results in food
-            if currentGameState.getFood()[newPos[0]][newPos[1]]:
-                successor_score += 100
-            # Discourage action if it results in going away from food
-            if food_distances:
-                successor_score -= min(food_distances)
+        if successorGameState.isLose():
+            return 0
+        if successorGameState.isWin():
+            successor_score += 1000
+        # Encourage action if it results in food
+        successor_score += 100.0 / (successorGameState.getNumFood() + 1)
+        successor_score += 50.0 / (len(currentGameState.getCapsules())+1)
+        if food_distances:
+            successor_score += 10.0 / min(food_distances)
+        if ghost_distances:
+            successor_score += min(ghost_distances) / 10.0
         return successor_score
 
 
@@ -199,6 +202,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         return gameState.isWin() or gameState.isLose()
 
 
+
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
     Your minimax agent with alpha-beta pruning (question 3)
@@ -254,6 +258,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         return gameState.isWin() or gameState.isLose()
 
 
+
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
       Your expectimax agent (question 4)
@@ -304,6 +309,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
     def is_terminal(self, gameState):
         return gameState.isWin() or gameState.isLose()
 
+
 def betterEvaluationFunction(currentGameState):
     """
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
@@ -347,6 +353,7 @@ def betterEvaluationFunction(currentGameState):
                 future_expected_score += 5.0/min(food_distances)
         future_expected_score = future_expected_score/len(legal_actions)
     return current_score + future_expected_score
+
 
 # Abbreviation
 better = betterEvaluationFunction
