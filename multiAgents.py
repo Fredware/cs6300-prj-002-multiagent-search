@@ -309,11 +309,44 @@ def betterEvaluationFunction(currentGameState):
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
     evaluation function (question 5).
 
-    DESCRIPTION: <write something here so we know what you did>
+    DESCRIPTION:
+    My state value is equal to the current score + the immediate future expected reward over all legal actions in the
+    current state.
+    For the future reward, I care about 4 things in the following order:
+        1) Prioritize eating all the food
+        2) When possible, eat the pellets. It gives you protection against ghosts
+        3) If given the chance, simplify the game by eating a ghost
+        4) Add a small bias towards the closest food source
+    Therefore my reward is a weighted linear combination of these features. My weights are separated by an order
+        of magnitude or a factor of 2 depending on the priority of each feature.
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    current_score = currentGameState.getScore()
+    future_expected_score = 0
+    legal_actions = currentGameState.getLegalPacmanActions()
+    if legal_actions:
+        for action in legal_actions:
+            successor_state = currentGameState.generatePacmanSuccessor(action)
+            if successor_state.isLose():
+                continue
+            if successor_state.isWin():
+                future_expected_score += 1000
+            # Easy features
+            remaining_food = successor_state.getNumFood()
+            remaining_pellets = len(successor_state.getCapsules())
+            remaining_agents = successor_state.getNumAgents()  # Don't count pacman
+            print(remaining_food, remaining_pellets, remaining_agents)
+            future_expected_score += (100.0/(remaining_food+1) + 50.0/(remaining_pellets+1) + 10.0/remaining_agents)
 
+            # Distance-based feature
+            pacman_position = successor_state.getPacmanPosition()
+            food_grid = successor_state.getFood()
+            food_positions = [(i, j) for i, row in enumerate(food_grid) for j, is_food in enumerate(row) if is_food]
+            food_distances = [compute_point_distance(pacman_position, food_position) for food_position in food_positions]
+            if food_distances:
+                future_expected_score += 5.0/min(food_distances)
+        future_expected_score = future_expected_score/len(legal_actions)
+    return current_score + future_expected_score
 
 # Abbreviation
 better = betterEvaluationFunction
