@@ -1,4 +1,8 @@
 # multiAgents.py
+# Submission by:
+#   Fredi R. Mino
+#   u1424875
+#
 # --------------
 # Licensing Information:  You are free to use or extend these projects for
 # educational purposes provided that (1) you do not distribute or publish
@@ -81,20 +85,28 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        ghost_positions = [ghost_state.getPosition() for ghost_state in newGhostStates]
         food_positions = [(i, j) for i, row in enumerate(newFood) for j, is_food in enumerate(row) if is_food]
         food_distances = [compute_point_distance(newPos, food_position) for food_position in food_positions]
-        # Avoid action if it results in death
+        ghost_positions = [ghost_state.getPosition() for ghost_state in newGhostStates]
+        ghost_distances = [compute_point_distance(newPos, ghost_position) for ghost_position in ghost_positions]
+
         successor_score = successorGameState.getScore()
-        if newPos in ghost_positions:
-            successor_score = -1000
-        else:
-            # Encourage action if it results in food
-            if currentGameState.getFood()[newPos[0]][newPos[1]]:
-                successor_score += 100
-            # Discourage action if it results in going away from food
-            if food_distances:
-                successor_score -= min(food_distances)
+        # Avoid action if it results in death
+        if successorGameState.isLose():
+            return 0
+        # Heavily encourage action if it results in win
+        if successorGameState.isWin():
+            successor_score += 1000
+        # Encourage action if it results in food
+        successor_score += 100.0 / (successorGameState.getNumFood() + 1)
+        # Encourage action if it results in eaten capsule
+        successor_score += 50.0 / (len(currentGameState.getCapsules())+1)
+        # Discourage actions that increase distance between pacman and closest food pellet
+        if food_distances:
+            successor_score += 10.0 / min(food_distances)
+        # Discourage actions that reduce distance between pacman and closest ghost
+        if ghost_distances:
+            successor_score += min(ghost_distances) / 10.0
         return successor_score
 
 
@@ -199,6 +211,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         return gameState.isWin() or gameState.isLose()
 
 
+
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
     Your minimax agent with alpha-beta pruning (question 3)
@@ -254,6 +267,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         return gameState.isWin() or gameState.isLose()
 
 
+
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
       Your expectimax agent (question 4)
@@ -304,6 +318,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
     def is_terminal(self, gameState):
         return gameState.isWin() or gameState.isLose()
 
+
 def betterEvaluationFunction(currentGameState):
     """
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
@@ -347,6 +362,7 @@ def betterEvaluationFunction(currentGameState):
                 future_expected_score += 5.0/min(food_distances)
         future_expected_score = future_expected_score/len(legal_actions)
     return current_score + future_expected_score
+
 
 # Abbreviation
 better = betterEvaluationFunction
